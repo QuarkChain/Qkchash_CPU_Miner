@@ -1,4 +1,4 @@
-# Qkchash Stratum CPU Miner for macOS
+# One Button Qkchash CPU Miner
 
 
 
@@ -8,7 +8,7 @@ This is an Qkchash CPU mining worker.
 
 I forked the [Ethminer for mac](https://github.com/ArtSabintsev/Ethminer-for-macOS.git) and modified the code, which can support the QuarkChain Qkchash mining. 
 With this modified ethminer, you can mine the shards, which relies on an Qkchash Proof of Work.
-Noted that this version only support the Stratum mode, which can directly connect to Qkchash_pool.
+Noted that this version supports getWork and Stratum mode, which can directly connect to one buttion cluster or Qkchash pool.
 
 ## Features
 
@@ -30,9 +30,7 @@ Download and install the latest version of
 
 1. Download this branch
 ```
-git clone https://github.com/QuarkChain/mining.git
-cd mining
-git checkout Qkchash_CPU_Stratum_Miner
+git clone https://github.com/jyouyj/Qkchash_CPU_Miner.git
 ```
 
 2. Enter the downloaded folder and create and enter the `build` directory.
@@ -56,8 +54,27 @@ make -j8
 cmake --build .
 ```
 
-## Examples connecting to Qkchash_pool
 
+## One Button Quick Start - Use Docker Image to Start a CPU Mining for Qkchash
+
+Here we provide detailed instructions for starting the mining process using a pre-built docker image. 
+
+```bash
+# please login in the docker with your username and password
+docker login -u <docker username> -p <docker password>
+
+# NOTE the version should be in sync with the release version, e.g. jyouyj/qkchash_one_button:latest
+$ docker pull jyouyj/qkchash_one_button:latest
+
+# recommend using some window management tool to start
+# different programs, for example `screen` or `tmux`.
+$ docker run -it jyouyj/qkchash_one_button:latest
+```
+
+## Binary code for Windows system
+Please refer to the release to download the latest binary code for Windows.
+
+## Examples connecting to one buttion cluster
 
 please use,
 ```shell
@@ -77,5 +94,7 @@ One example for chain 7, shard 0 is
 Note:
 Please use the 20 bytes address with the first two characters "0x" from the coinbase address.
 Please specify the shard id which you want to mine.
+
+
 
 
