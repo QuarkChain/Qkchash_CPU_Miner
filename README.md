@@ -16,7 +16,7 @@ Noted that this version supports getWork and Stratum mode, which can directly co
 * Support getWork mode
 * Support CPU mining for Qkchash
 * Support failover pool
-* Support qkchash llrb version
+* Support [qkchash llrb version with rotation stats](https://github.com/QuarkChain/QCEPs/blob/master/QCEP/qcep-2.md)
 
 ## Pre-Installation Instructions
 Download and install the latest version of
@@ -64,11 +64,11 @@ Here we provide detailed instructions for starting the mining process using a pr
 docker login -u <docker username> -p <docker password>
 
 # NOTE the version should be in sync with the release version, e.g. jyouyj/qkchash_one_button:latest
-$ docker pull jyouyj/qkchash_one_button:latest
+$ docker pull jyouyj/qkchash_with_rotation:qkchashX1.0
 
 # recommend using some window management tool to start
 # different programs, for example `screen` or `tmux`.
-$ docker run -it jyouyj/qkchash_one_button:latest
+$ docker run -it jyouyj/qkchash_with_rotation:qkchashX1.0
 ```
 
 ## Binary code for Windows system
