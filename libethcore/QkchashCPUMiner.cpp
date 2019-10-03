@@ -47,9 +47,9 @@
 
 //#include "qkchash/qkchash.h"
 
-
-#include "qkchash_llrb.h"
 #include "util.h"
+#include "qkchash_llrb.h"
+
 
 
 
@@ -61,13 +61,13 @@ using namespace std;
 using namespace dev;
 using namespace eth;
 
-
+const uint64_t ENABLE_QKCHASHX_HEIGHT = 1480000;
 
 namespace org {
 namespace quarkchain {
 
-const uint32_t FNV_PRIME_32 = 0x01000193;
-const uint64_t FNV_PRIME_64 = 0x100000001b3ULL;
+//const uint32_t FNV_PRIME_32 = 0x01000193;
+//const uint64_t FNV_PRIME_64 = 0x100000001b3ULL;
 const uint32_t ACCESS_ROUND = 64;
 const uint32_t INIT_SET_ENTRIES = 1024 * 64;
 const uint32_t CACHE_ENTRY_CNT = 1024 * 64;
@@ -125,7 +125,7 @@ void generate_cache(std::set<uint64_t>& oset, std::vector<uint64_t>& ls, std::ve
 
     byte digest[64];
 	std::array<uint8_t, 36> combine;
-	for (int i = 0; i < seed.size(); ++i) {
+	for (unsigned int i = 0; i < seed.size(); ++i) {
 			combine[i] = seed[i];
 	} 
 	//std::cout << "seed size:" << std::endl;
@@ -236,14 +236,15 @@ extern "C" void *cache_copy(void *ptr) {
 
 extern "C" void cache_destroy(void *ptr) {
     org::quarkchain::LLRB<uint64_t>* tree0=(org::quarkchain::LLRB<uint64_t>*) ptr;
-	free(tree0->getArenaBase());	
+	free((void *)tree0->getArenaBase());	
 	delete tree0;
 	  
 }
 
 extern "C" void qkc_hash(void *cache_ptr,
                          uint64_t* seed_ptr,
-                         uint64_t* result_ptr) {
+                         uint64_t* result_ptr,
+						 bool with_rotation_stats) {
     org::quarkchain::LLRB<uint64_t>* tree0=(org::quarkchain::LLRB<uint64_t>*) cache_ptr;
     void *arena1 = malloc(org::quarkchain::INIT_SET_ENTRIES *
                           org::quarkchain::LLRB<uint64_t>::getNodeSize());
@@ -256,6 +257,12 @@ extern "C" void qkc_hash(void *cache_ptr,
 
     org::quarkchain::qkc_hash_llrb(tree1, seed, result);
 
+    if (with_rotation_stats) {
+        std::array<uint64_t, 4> r_stats = tree1.getRotationStats();
+        for (size_t i = 0; i < r_stats.size(); i++) {
+            result[i] ^= r_stats[i];
+        }
+    }
     std::copy(result.begin(), result.end(), result_ptr);
     free(arena1);
 }
@@ -283,7 +290,7 @@ typedef struct qkchash_return_value {
 
 
 // main qkchash compute function
-qkchash_return_value_t  qkchash_full_compute(uint64_t* cache, ethash_h256_t header_hash, uint64_t tryNonce, bool first, void *cache_ptr) {
+qkchash_return_value_t  qkchash_full_compute(uint64_t* cache, ethash_h256_t header_hash, uint64_t tryNonce, bool first, void *cache_ptr, bool with_rotation_stats) {
     
 
     qkchash_return_value_t ret;
@@ -329,9 +336,9 @@ qkchash_return_value_t  qkchash_full_compute(uint64_t* cache, ethash_h256_t head
 
 	if (first) {
 		ret.cache_ptr =  cache_create(cache, 65536);
-		qkc_hash(ret.cache_ptr, &seedArray[0], pointer_result);
+		qkc_hash(ret.cache_ptr, &seedArray[0], pointer_result, with_rotation_stats);
 	} else {
-		qkc_hash(cache_copy(cache_ptr), &seedArray[0], pointer_result);
+		qkc_hash(cache_copy(cache_ptr), &seedArray[0], pointer_result, with_rotation_stats);
 	}
     
     
@@ -473,7 +480,14 @@ void QkchashCPUMiner::workLoop()
 		seed.push_back(seedHash.b[i]);
 	}
 
+	//uint64_t height = EthashAux::number(w.seedHash);
+	uint64_t height = (uint64_t) w.height;
+	bool with_rotation_stats = (height >= ENABLE_QKCHASHX_HEIGHT);
 
+    
+	if (with_rotation_stats == true) {
+		cnote << height << "with_rotation_stats_height------->";
+	}
 
     //std::cout << "Start" << std::endl;
 	while(!shouldStop() && slist.empty()) {
@@ -490,7 +504,7 @@ void QkchashCPUMiner::workLoop()
 
 	for (; !shouldStop(); tryNonce++, hashCount++) {
 
-    	qkchashReturn = qkchash_full_compute(&slist[0], *(ethash_h256_t*)w.headerHash.data(), tryNonce, first, cache_ptr);
+    	qkchashReturn = qkchash_full_compute(&slist[0], *(ethash_h256_t*)w.headerHash.data(), tryNonce, first, cache_ptr, with_rotation_stats);
 
 		cache_ptr = qkchashReturn.cache_ptr;
 
@@ -503,7 +517,9 @@ void QkchashCPUMiner::workLoop()
 			//cnote << boundary << "boundary";
              
 			bool submit_result = submitProof(EthashProofOfWork::Solution{(h64)(u64)tryNonce, h256((uint8_t*)&qkchashReturn.mix_hash, h256::ConstructFromPointer)});
-			//cnote << submit_result << "submit_result";
+			if (!submit_result) {
+				cnote << submit_result << "submit_result failure";
+			}		
 			break;
 		}
 		if (!(hashCount % 100))

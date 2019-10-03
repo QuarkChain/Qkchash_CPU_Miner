@@ -909,9 +909,11 @@ private:
 						previous.headerHash = current.headerHash;
 						previous.seedHash = current.seedHash;
 						previous.boundary = current.boundary;
+						previous.height = current.height;
 						current.headerHash = hh;
 						current.seedHash = newSeedHash;
 						current.boundary = boundary;
+						current.height = current_height;
 						// current.boundary = h256(fromHex(v[2].asString()), h256::AlignRight);
 						minelog << "Got work package: #" + current.headerHash.hex().substr(0,8);
 						f.setWork(current);

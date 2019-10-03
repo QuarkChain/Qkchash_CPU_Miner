@@ -5,7 +5,15 @@
 #include <iostream>
 #include <vector>
 
-#include "util.h"
+//#include "util.h"
+
+/*
+ * Abort the code if cond is false.
+ * Unlike assert(), which can be disabled by NDEBUG macro,
+ * check() will always abort the code if cond is false.
+ */
+#define CHECK(COND) ((COND) ? (void)0 : abort())
+
 
 namespace org {
 namespace quarkchain {
@@ -38,6 +46,7 @@ public:
         for (int32_t i = arenaSize_ / sizeof (Node) - 1; i >= 0; i--) {
             freeList_.push_back(i);
         }
+        resetRotationStats();
     }
 
     LLRB<T>& operator=(LLRB<T>&& other) {
@@ -46,10 +55,10 @@ public:
         capacity_ = other.capacity_;
         root_ = other.root_;
         freeList_ = std::move(other.freeList_);
+        rotationStats_ = std::move(other.rotationStats_);
         return *this;
     };
-    LLRB<T>& operator=(const LLRB<T>& other) = delete;
-    LLRB<T>(const LLRB<T>& o) = delete;
+    LLRB<T>& operator=(const LLRB<T>& other)  = delete;
     LLRB<T>(LLRB<T>&& o) = default;
 
     void insert(T value) {
@@ -111,7 +120,7 @@ public:
 
     LLRB<T> copy(uintptr_t arenaBase) {
         memcpy((void *)arenaBase, (void *)arenaBase_, arenaSize_);
-        return LLRB<T>(arenaBase, arenaSize_, root_, freeList_);
+        return LLRB<T>(arenaBase, arenaSize_, root_, freeList_, rotationStats_);
     }
 
     uint32_t size() {
@@ -122,7 +131,7 @@ public:
      * Obtain a quick hash of the tree.
      */
     uint64_t hash() {
-        return hash(getNode(root_), FNV_OFFSET_BASE_64, 0);
+        return hash(getNode(root_), 0xcbf29ce484222325ULL, 0);
     }
 
     /*
@@ -136,26 +145,38 @@ public:
                is23(getNode(root_));
     }
 
-    void* getArenaBase() {
-        return (void *)arenaBase_;
+    uintptr_t getArenaBase() {
+        return arenaBase_;
+    }
+  
+    std::array<uint64_t, 4> getRotationStats() {
+        return rotationStats_;
     }
 
+    void resetRotationStats() {
+        for (size_t i = 0; i < rotationStats_.size(); i++) {
+            rotationStats_[i] = 0;
+        }
+    }
 private:
     LLRB(uintptr_t arenaBase,
          uint64_t arenaSize,
          uint32_t root,
-         std::vector<uint32_t> freeList)
+         std::vector<uint32_t> freeList,
+         std::array<uint64_t, 4> rotationStats)
          : arenaBase_(arenaBase),
            arenaSize_(arenaSize),
            capacity_(arenaSize_ / sizeof (Node)),
            root_(root),
-           freeList_(std::move(freeList)) { }
+           freeList_(std::move(freeList)),
+           rotationStats_(std::move(rotationStats)) { }
 
     uintptr_t arenaBase_;
     uint64_t arenaSize_;
     uint32_t capacity_;
     uint32_t root_;
     std::vector<uint32_t> freeList_;
+    std::array<uint64_t, 4> rotationStats_;
 
     const bool RED = true;
     const bool BLACK = false;
@@ -169,6 +190,10 @@ private:
         print(n->left);
         std::cout << n->value << " " << std::endl;
         print(n->right);
+    }
+
+    uint64_t fnv64(uint64_t v1, uint64_t v2) {
+    return (v1 * 0xcbf29ce484222325ULL) ^ v2;
     }
 
     uint64_t hash(Node* h, uint64_t hv, uint64_t idx) {
@@ -189,6 +214,13 @@ private:
         x->color = h->color;
         h->color = RED;
         x->size += (h->size + 1);
+        uint64_t c = 0;
+        for (size_t i = 0; i < rotationStats_.size(); i++) {
+            uint64_t nc = (rotationStats_[i] & (0x1ULL << 63)) == 0 ? 0 : 1;
+            rotationStats_[i] = (rotationStats_[i] << 1) ^ c;
+            c = nc;
+        }
+        rotationStats_[0] = rotationStats_[0] ^ c;
         return x;
     }
 
@@ -207,6 +239,13 @@ private:
         x->color = h->color;
         h->color = RED;
         h->size -= (x->size + 1);
+        uint64_t c = 1;
+        for (size_t i = 0; i < rotationStats_.size(); i++) {
+            uint64_t nc = (rotationStats_[i] & (0x1ULL << 63)) == 0 ? 0 : 1;
+            rotationStats_[i] = (rotationStats_[i] << 1) ^ c;
+            c = nc;
+        }
+        rotationStats_[0] = rotationStats_[0] ^ c;
         return x;
     }
 
@@ -473,7 +512,7 @@ private:
         Node* x = root_;
         while (x != nullptr) {
             if (!isRed(x)) black++;
-            x = x->left;
+            x = x.left;
         }
 
         return isBalanced(root_, black);

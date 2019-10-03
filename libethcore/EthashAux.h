@@ -64,6 +64,7 @@ struct EthashProofOfWork
 		h256 boundary;
 		h256 headerHash;	///< When h256() means "pause until notified a new work package is available".
 		h256 seedHash;
+		long long height = 0;
 
 		uint64_t startNonce = 0;
 		int exSizeBits = -1;

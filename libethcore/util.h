@@ -31,6 +31,6 @@ uint64_t fnv64_1a(uint64_t v1, uint64_t v2) {
  * Unlike assert(), which can be disabled by NDEBUG macro,
  * check() will always abort the code if cond is false.
  */
-#define CHECK(COND) ((COND) ? (void)0 : abort())
+//#define CHECK(COND) ((COND) ? (void)0 : abort())
 
 #endif
