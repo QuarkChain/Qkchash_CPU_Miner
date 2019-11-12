@@ -39,7 +39,7 @@ public:
 	QkchashCPUMiner(GenericMiner<EthashProofOfWork>::ConstructionInfo const& _ci);
 	~QkchashCPUMiner();
 
-	static unsigned instances() { return s_numInstances > 0 ? s_numInstances : std::thread::hardware_concurrency(); }
+	static unsigned instances() { return s_numInstances > 0 ? (s_numInstances < std::thread::hardware_concurrency() ? s_numInstances : std::thread::hardware_concurrency()) : std::thread::hardware_concurrency(); }
 	static std::string platformInfo();
 	static void listDevices() {}
 	static bool configureGPU(unsigned, unsigned, unsigned, unsigned, unsigned, bool, unsigned, uint64_t) { return false; }

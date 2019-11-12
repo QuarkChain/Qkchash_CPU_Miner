@@ -86,7 +86,7 @@ cd ethminer
 - `CLUSTER_IP` defines the IP for the Quarkchain cluster. If you want to try the one button quick mining, you can use fullnode.quarkchain.io or fullnode2.quarkchain.io.
 - `--shard-id` defines one specify shard to mine. shard id 60001 and 70001 are Qkchash.
 - `--coinbase` defines your mining coinbase address. Please use 20 bytes address generated the same way as an Ethereum address.
-- `-t` limits number of CPU miners to n 
+- `-t` limits number of CPU miners to n ,if it is greater than the maximum, the force will not increase 
 
 One example for chain 7, shard 0 is
 ./ethminer --farm fullnode.quarkchain.io:38391 --coinbase 0x1234000000000000000000000000000000000000 -t 4 --shard-id 70001

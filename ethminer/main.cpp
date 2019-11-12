@@ -70,12 +70,13 @@ int main(int argc, char** argv)
 {
 	cout << "Qkchash for macOS (Fixed by Jie You)" << endl;
 	cout << "=====================================================================" << endl;
-	//cout << "Forked from github.com/genoil/cpp-ethereum, which itself was forked from github.com/ethereum/cpp-ethereum." << endl;
-	//cout << "CUDA kernel ported from Tim Hughes' OpenCL kernel" << endl;
-	//cout << "With contributions from nicehash, nerdralph, RoBiK and sp_" << endl << endl;
 	cout << "Please consider a donation to:" << endl;
 	cout << "Jie's ETH: 0xdb7FD07891697f74A7E5102Cc2cC522c25dc06e9" << endl;
-    //cout << "Genoil's ETH: 0xeb9310b185455f863f526dab3d245809f6854b4d" << endl << endl;
+	cout << "**********************************************************" << endl;
+	cout << "CPU miners '-t' have a maximum and if it is greater than the maximum, the force will not increase" << endl;
+	cout << "Max  CPU miners '-t':   " << std::thread::hardware_concurrency() << endl;
+	cout << "**********************************************************" << endl;
+	//cout << "Genoil's ETH: 0xeb9310b185455f863f526dab3d245809f6854b4d" << endl << endl;
 
 	MinerCLI m(MinerCLI::OperationMode::Stratum);
 
