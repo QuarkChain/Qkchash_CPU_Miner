@@ -44,7 +44,7 @@
 #include <libethcore/EthashAux.h>
 #include <libethcore/EthashCUDAMiner.h>
 #include <libethcore/EthashGPUMiner.h>
-#include <libethcore/QkchashCPUMiner.h>
+#include <libethcore/QkchashxCPUMiner.h>
 #include <libethcore/Farm.h>
 #if ETH_ETHASHCL || !ETH_TRUE
 #include <libethash-cl/ethash_cl_miner.h>
@@ -91,8 +91,8 @@ inline std::string credits()
 	return out.str();
 }
 
-class BadArgument: public Exception {};
-struct MiningChannel: public LogChannel
+class BadArgument : public Exception {};
+struct MiningChannel : public LogChannel
 {
 	static const char* name() { return EthGreen "  m"; }
 	static const int verbosity = 2;
@@ -510,7 +510,7 @@ public:
 			//cout << "CPU mining is no longer supported in this miner. Use -G (opencl) or -U (cuda) flag to select GPU platform." << endl;
 		//	exit(0);
 
-		    QkchashCPUMiner::setNumInstances(m_miningThreads);
+			QkchashxCPUMiner::setNumInstances(m_miningThreads);
 		}
 		else if (m_minerType == MinerType::CL || m_minerType == MinerType::Mixed)
 		{
@@ -666,9 +666,9 @@ private:
 
 		GenericFarm<EthashProofOfWork> f;
 		map<string, GenericFarm<EthashProofOfWork>::SealerDescriptor> sealers;
-		sealers["cpu"] = GenericFarm<EthashProofOfWork>::SealerDescriptor{&QkchashCPUMiner::instances, [](GenericMiner<EthashProofOfWork>::ConstructionInfo ci){ return new QkchashCPUMiner(ci); }};
+		sealers["cpu"] = GenericFarm<EthashProofOfWork>::SealerDescriptor{ &QkchashxCPUMiner::instances, [](GenericMiner<EthashProofOfWork>::ConstructionInfo ci){ return new QkchashxCPUMiner(ci); } };
 #if ETH_ETHASHCL
-		sealers["opencl"] = GenericFarm<EthashProofOfWork>::SealerDescriptor{&EthashGPUMiner::instances, [](GenericMiner<EthashProofOfWork>::ConstructionInfo ci){ return new EthashGPUMiner(ci); }};
+		//sealers["opencl"] = GenericFarm<EthashProofOfWork>::SealerDescriptor{ &EthashGPUMiner::instances, [](GenericMiner<EthashProofOfWork>::ConstructionInfo ci){ return new EthashGPUMiner(ci); } };
 #endif
 #if ETH_ETHASHCUDA
 		sealers["cuda"] = GenericFarm<EthashProofOfWork>::SealerDescriptor{ &EthashCUDAMiner::instances, [](GenericMiner<EthashProofOfWork>::ConstructionInfo ci){ return new EthashCUDAMiner(ci); } };
@@ -750,9 +750,9 @@ private:
 
 		GenericFarm<EthashProofOfWork> f;
 		map<string, GenericFarm<EthashProofOfWork>::SealerDescriptor> sealers;
-		sealers["cpu"] = GenericFarm<EthashProofOfWork>::SealerDescriptor{ &QkchashCPUMiner::instances, [](GenericMiner<EthashProofOfWork>::ConstructionInfo ci){ return new QkchashCPUMiner(ci); } };
+		sealers["cpu"] = GenericFarm<EthashProofOfWork>::SealerDescriptor{ &QkchashxCPUMiner::instances, [](GenericMiner<EthashProofOfWork>::ConstructionInfo ci){ return new QkchashxCPUMiner(ci); } };
 #if ETH_ETHASHCL
-		sealers["opencl"] = GenericFarm<EthashProofOfWork>::SealerDescriptor{ &EthashGPUMiner::instances, [](GenericMiner<EthashProofOfWork>::ConstructionInfo ci){ return new EthashGPUMiner(ci); } };
+		//sealers["opencl"] = GenericFarm<EthashProofOfWork>::SealerDescriptor{ &EthashGPUMiner::instances, [](GenericMiner<EthashProofOfWork>::ConstructionInfo ci){ return new EthashGPUMiner(ci); } };
 #endif
 #if ETH_ETHASHCUDA
 		sealers["cuda"] = GenericFarm<EthashProofOfWork>::SealerDescriptor{ &EthashCUDAMiner::instances, [](GenericMiner<EthashProofOfWork>::ConstructionInfo ci){ return new EthashCUDAMiner(ci); } };
@@ -829,9 +829,9 @@ private:
 	void doFarm(MinerType _m, string & _remote, unsigned _recheckPeriod)
 	{
 		map<string, GenericFarm<EthashProofOfWork>::SealerDescriptor> sealers;
-		sealers["cpu"] = GenericFarm<EthashProofOfWork>::SealerDescriptor{&QkchashCPUMiner::instances, [](GenericMiner<EthashProofOfWork>::ConstructionInfo ci){ return new QkchashCPUMiner(ci); }};
+		sealers["cpu"] = GenericFarm<EthashProofOfWork>::SealerDescriptor{ &QkchashxCPUMiner::instances, [](GenericMiner<EthashProofOfWork>::ConstructionInfo ci){ return new QkchashxCPUMiner(ci); } };
 #if ETH_ETHASHCL
-		sealers["opencl"] = GenericFarm<EthashProofOfWork>::SealerDescriptor{&EthashGPUMiner::instances, [](GenericMiner<EthashProofOfWork>::ConstructionInfo ci){ return new EthashGPUMiner(ci); }};
+		//sealers["opencl"] = GenericFarm<EthashProofOfWork>::SealerDescriptor{ &EthashGPUMiner::instances, [](GenericMiner<EthashProofOfWork>::ConstructionInfo ci){ return new EthashGPUMiner(ci); } };
 #endif
 #if ETH_ETHASHCUDA
 		sealers["cuda"] = GenericFarm<EthashProofOfWork>::SealerDescriptor{ &EthashCUDAMiner::instances, [](GenericMiner<EthashProofOfWork>::ConstructionInfo ci){ return new EthashCUDAMiner(ci); } };
@@ -900,7 +900,7 @@ private:
 					h256 newSeedHash = EthashAux::seedHash((unsigned) current_height);
 
 					long long diff = std::stoll(v[2].asString(), nullptr, 16);
-                   
+
                     h256 boundary = (h256)(u256)((bigint(1) << 256) / diff);
 
 					if (hh != current.headerHash)
@@ -997,7 +997,7 @@ private:
 	void doStratum()
 	{
 		map<string, GenericFarm<EthashProofOfWork>::SealerDescriptor> sealers;
-		sealers["cpu"] = GenericFarm<EthashProofOfWork>::SealerDescriptor{ &QkchashCPUMiner::instances, [](GenericMiner<EthashProofOfWork>::ConstructionInfo ci){ return new QkchashCPUMiner(ci); } };
+		sealers["cpu"] = GenericFarm<EthashProofOfWork>::SealerDescriptor{ &QkchashxCPUMiner::instances, [](GenericMiner<EthashProofOfWork>::ConstructionInfo ci){ return new QkchashxCPUMiner(ci); } };
 #if ETH_ETHASHCL
 		sealers["opencl"] = GenericFarm<EthashProofOfWork>::SealerDescriptor{ &EthashGPUMiner::instances, [](GenericMiner<EthashProofOfWork>::ConstructionInfo ci){ return new EthashGPUMiner(ci); } };
 #endif

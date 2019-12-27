@@ -22,7 +22,7 @@
  */
 
 #include "EthashSealEngine.h"
-#include "QkchashCPUMiner.h"
+#include "QkchashxCPUMiner.h"
 #include "EthashGPUMiner.h"
 #include "EthashCUDAMiner.h"
 using namespace std;
@@ -32,9 +32,9 @@ using namespace eth;
 EthashSealEngine::EthashSealEngine()
 {
 	map<string, GenericFarm<EthashProofOfWork>::SealerDescriptor> sealers;
-	sealers["cpu"] = GenericFarm<EthashProofOfWork>::SealerDescriptor{&QkchashCPUMiner::instances, [](GenericMiner<EthashProofOfWork>::ConstructionInfo ci){ return new QkchashCPUMiner(ci); }};
+	sealers["cpu"] = GenericFarm<EthashProofOfWork>::SealerDescriptor{&QkchashxCPUMiner::instances, [](GenericMiner<EthashProofOfWork>::ConstructionInfo ci){ return new QkchashxCPUMiner(ci); }};
 #if ETH_ETHASHCL
-	sealers["opencl"] = GenericFarm<EthashProofOfWork>::SealerDescriptor{&EthashGPUMiner::instances, [](GenericMiner<EthashProofOfWork>::ConstructionInfo ci){ return new EthashGPUMiner(ci); }};
+	//sealers["opencl"] = GenericFarm<EthashProofOfWork>::SealerDescriptor{&EthashGPUMiner::instances, [](GenericMiner<EthashProofOfWork>::ConstructionInfo ci){ return new EthashGPUMiner(ci); }};
 #endif
 #if ETH_ETHASHCUDA
 	sealers["cuda"] = GenericFarm<EthashProofOfWork>::SealerDescriptor{ &EthashCUDAMiner::instances, [](GenericMiner<EthashProofOfWork>::ConstructionInfo ci){ return new EthashCUDAMiner(ci); } };

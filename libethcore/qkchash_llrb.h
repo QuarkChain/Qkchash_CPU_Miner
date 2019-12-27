@@ -49,17 +49,18 @@ public:
         resetRotationStats();
     }
 
-    LLRB<T>& operator=(LLRB<T>&& other) {
-        arenaBase_ = other.arenaBase_;
-        arenaSize_ = other.arenaSize_;
-        capacity_ = other.capacity_;
-        root_ = other.root_;
-        freeList_ = std::move(other.freeList_);
-        rotationStats_ = std::move(other.rotationStats_);
-        return *this;
-    };
-    LLRB<T>& operator=(const LLRB<T>& other)  = delete;
-    LLRB<T>(LLRB<T>&& o) = default;
+			LLRB<T>& operator=(const LLRB<T>& other) = default;
+
+			// For C++17
+			// LLRB<T>& operator=(LLRB<T>&& other) {
+			//     arenaBase_ = other.arenaBase_;
+			//     arenaSize_ = other.arenaSize_;
+			//     capacity_ = other.capacity_;
+			//     root_ = other.root_;
+			//     freeList_ = std::move(other.freeList_);
+			//     return *this;
+			// };
+			// LLRB<T>(LLRB<T>&& o) = default;
 
     void insert(T value) {
         Node* n = insert(getNode(root_), value);
@@ -148,7 +149,7 @@ public:
     uintptr_t getArenaBase() {
         return arenaBase_;
     }
-  
+
     std::array<uint64_t, 4> getRotationStats() {
         return rotationStats_;
     }
