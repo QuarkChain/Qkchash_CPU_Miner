@@ -1,4 +1,4 @@
-# One Button Qkchash CPU Miner
+# One Button Qkchash CPU Miner  
 
 
 
